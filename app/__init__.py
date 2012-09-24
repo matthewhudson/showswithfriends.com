@@ -10,6 +10,9 @@ from app.models import db
 
 flask_app = Flask(__name__)
 
+
+# TODO clean up the rather nasty circular import issue that is causing
+# this to need to be after the above definition.
 import app.views
 
 # Configuration
