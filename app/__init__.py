@@ -10,9 +10,6 @@ from flask.ext.oauth import OAuth
 
 from app.models import db
 
-from lib.defcon import retrieval
-from lib.defcon.context import Context
-
 app = Flask(__name__)
 
 # Configuration
@@ -29,19 +26,6 @@ else:
 db.init_app(app)
 exceptional = Exceptional(app)
 csrf = SeaSurf(app)
-
-# No Cache, Please.
-mmc = retrieval.MergeMarketCache(no_cache=True)
-
-# fake out indexes
-ctx = Context()
-
-from lib.defcon.DBIndex import DBIndex
-fake_venue_index     = DBIndex("venue", db.session)
-fake_performer_index = DBIndex("performer", db.session)
-
-ctx._venue_index = fake_venue_index
-ctx._performer_index = fake_performer_index
 
 oauth = OAuth()
 sg_oauth = oauth.remote_app('seatgeek',
