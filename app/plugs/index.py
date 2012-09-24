@@ -1,7 +1,7 @@
 from flask import render_template
 from flask.views import View
 
-from nro import auth
+from app import auth
 
 class BaseIndexView(View):
 

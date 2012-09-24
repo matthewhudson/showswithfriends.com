@@ -1,10 +1,9 @@
 import os
 
 class Config(object):
-    SECRET_KEY = '!@#$%^&*(@IOMN)( ;oI*; "(@n!& )'
-    SITE_NAME = 'nro'
+    SECRET_KEY = 'REPLACE: SECRET KEY'
+    SITE_NAME = 'REPLACE: PROJECT NAME'
     PORT = 5000
-    RECON_SERVICE_URL = 'services-ec2-01.seatgeek.com:8400'
 
 class ProductionConfig(Config):
     DEBUG = False

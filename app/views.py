@@ -1,6 +1,6 @@
 import sys, os
 
-from nro import app, db, sg_oauth
+from app import app, db, sg_oauth
 from flask import request, redirect, url_for, abort, render_template, flash, session, g
 from models.user import User
 
@@ -11,7 +11,7 @@ import requests, json
 current_path = os.path.abspath(os.path.dirname(__file__).decode('utf-8'))
 sys.path.append(os.path.abspath(current_path + "/../../../utils/python"))
 
-from nro.plugs.index import *
+from app.plugs.index import IndexView
 
 # Rules
 app.add_url_rule('/', view_func=IndexView.as_view('index'))

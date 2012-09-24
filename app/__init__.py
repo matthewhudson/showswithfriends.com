@@ -8,7 +8,7 @@ from flask.ext.exceptional import Exceptional
 from flask.ext.seasurf import SeaSurf
 from flask.ext.oauth import OAuth
 
-from nro.models import db
+from app.models import db
 
 from lib.defcon import retrieval
 from lib.defcon.context import Context
@@ -17,13 +17,13 @@ app = Flask(__name__)
 
 # Configuration
 if os.getenv('SG_ENV') == 'dev':
-    app.config.from_object('nro.config.DevelopmentConfig')
+    app.config.from_object('app.config.DevelopmentConfig')
     app.logger.info("Config: Development")
 elif os.getenv('SG_ENV') == 'staging':
-    app.config.from_object('nro.config.StagingConfig')
+    app.config.from_object('app.config.StagingConfig')
     app.logger.info("Config: Staging")
 else:
-    app.config.from_object('nro.config.ProductionConfig')
+    app.config.from_object('app.config.ProductionConfig')
     app.logger.info("Config: Production")
 
 db.init_app(app)
@@ -54,7 +54,7 @@ sg_oauth = oauth.remote_app('seatgeek',
     request_token_params={'scope': 'sg-recon-admin'}
 )
 
-import nro.views
+import app.views
 
 @app.teardown_request
 def teardown_request(exception):

@@ -1,4 +1,4 @@
-from nro.models import db
+from app.models import db
 
 CAN_VIEW = 1
 
