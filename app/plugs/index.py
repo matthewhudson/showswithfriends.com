@@ -5,8 +5,6 @@ from app import auth
 
 class BaseIndexView(View):
 
-    decorators = [auth.require_view]
-
     def __init__(self):
         self.class_name = self.__class__.__name__
 

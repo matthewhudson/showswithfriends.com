@@ -1,7 +1,5 @@
-import os, sys
-
-current_path = os.path.abspath(os.path.dirname(__file__).decode('utf-8'))
-sys.path.append(os.path.abspath(current_path + "/../../../utils/python"))
+import os
+import sys
 
 from flask import Flask
 from flask.ext.exceptional import Exceptional
@@ -10,22 +8,24 @@ from flask.ext.oauth import OAuth
 
 from app.models import db
 
-app = Flask(__name__)
+flask_app = Flask(__name__)
+
+import app.views
 
 # Configuration
 if os.getenv('SG_ENV') == 'dev':
-    app.config.from_object('app.config.DevelopmentConfig')
-    app.logger.info("Config: Development")
+    flask_app.config.from_object('app.config.DevelopmentConfig')
+    flask_app.logger.info("Config: Development")
 elif os.getenv('SG_ENV') == 'staging':
-    app.config.from_object('app.config.StagingConfig')
-    app.logger.info("Config: Staging")
+    flask_app.config.from_object('app.config.StagingConfig')
+    flask_app.logger.info("Config: Staging")
 else:
-    app.config.from_object('app.config.ProductionConfig')
-    app.logger.info("Config: Production")
+    flask_app.config.from_object('app.config.ProductionConfig')
+    flask_app.logger.info("Config: Production")
 
-db.init_app(app)
-exceptional = Exceptional(app)
-csrf = SeaSurf(app)
+db.init_app(flask_app)
+exceptional = Exceptional(flask_app)
+csrf = SeaSurf(flask_app)
 
 oauth = OAuth()
 sg_oauth = oauth.remote_app('seatgeek',
@@ -33,14 +33,12 @@ sg_oauth = oauth.remote_app('seatgeek',
     request_token_url=None,
     access_token_url='https://api.seatgeek.com/2/oauth/access_token',
     authorize_url='/oauth',
-    consumer_key=app.config['SG_CLIENT_KEY'],
-    consumer_secret=app.config['SG_CLIENT_SEC'],
+    consumer_key=flask_app.config['SG_CLIENT_KEY'],
+    consumer_secret=flask_app.config['SG_CLIENT_SEC'],
     request_token_params={'scope': 'sg-recon-admin'}
 )
 
-import app.views
-
-@app.teardown_request
+@flask_app.teardown_request
 def teardown_request(exception):
     """Closes the database again at the end of the request."""
     db.session.remove()
