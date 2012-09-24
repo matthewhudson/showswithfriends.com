@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% from 'layout.html' import active_label %}
+
+{% block content %}
+  <div class="span9">
+    <div class="row-fluid">
+      <h1>403 - Forbidden</h1>
+
+      <p class="well">
+        You don't have the correct permissions for this. Please contact <a href="mailto:adam@seatgeek.com">Adam</a> or <a href="mailto:zack@seatgeek.com">Zack</a>
+      </p>
+
+			<form id="search" method="get" action="/search">
+				<input type="text" placeholder="Search Term" name="q" />
+
+				<br/>
+
+				<button type="submit" class="btn btn-info">Search</button>
+			</form>
+    </div><!--/row-->
+  </div><!--/span-->
+{% endblock %}

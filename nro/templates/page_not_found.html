@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+{% from 'layout.html' import active_label %}
+
+{% block content %}
+  <div class="span9">
+    <div class="row-fluid">
+      <h1>404 - Not Found</h1>
+
+      <p>Derp.</p>
+
+			<form id="search" method="get" action="/search">
+				<input type="text" placeholder="Search Term" name="q" />
+
+				<br/>
+
+				<button type="submit" class="btn btn-info">Search</button>
+			</form>
+    </div><!--/row-->
+  </div><!--/span-->
+{% endblock %}
