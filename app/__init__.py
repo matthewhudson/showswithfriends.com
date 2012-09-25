@@ -11,8 +11,8 @@ from app.models import db
 flask_app = Flask(__name__)
 
 
-# TODO clean up the rather nasty circular import issue that is causing
-# this to need to be after the above definition.
+# NOTE this is below the above due to a circular import issue documented here:
+# http://flask.pocoo.org/docs/patterns/packages/
 import app.views
 
 # Configuration
