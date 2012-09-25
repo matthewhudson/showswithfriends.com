@@ -16,7 +16,7 @@ flask_app = Flask(__name__)
 import app.views
 
 # Configuration
-if os.getenv('SG_ENV') == 'dev':
+if os.getenv('SG_ENV', "dev") == 'dev':
     flask_app.config.from_object('app.config.DevelopmentConfig')
     flask_app.logger.info("Config: Development")
 elif os.getenv('SG_ENV') == 'staging':
