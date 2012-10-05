@@ -45,3 +45,10 @@ sg_oauth = oauth.remote_app('seatgeek',
 def teardown_request(exception):
     """Closes the database again at the end of the request."""
     db.session.remove()
+
+
+try:
+    import newrelic.agent
+    new_relic_app = newrelic.agent.wsgi_application()(flask_app)
+except ImportError:
+    print "Could not import New Relic"
