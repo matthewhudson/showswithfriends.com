@@ -16,7 +16,6 @@ import requests
 import app
 from app.plugs.index import IndexView
 import models
-from models.user import User
 
 
 # Rules
@@ -24,22 +23,25 @@ app.flask_app.add_url_rule('/', view_func=IndexView.as_view('index'))
 
 @app.flask_app.before_request
 def before_request():
-    if session.get('user_id'):
-        g.user = User.query.get(session.get('user_id'))
-        if g.user is None:
-            session['user_id'] = None
-            return redirect(url_for('oauth'))
-        resp = requests.get('https://api.seatgeek.com/2/oauth/token', params={'access_token': g.user.access_token})
+    access_token = session.get('access_token'):
+    if access_token:
+        # REPLACE this section is checking to make sure that the
+        # sg-recon-admin scope is present for the token. Your app
+        # might not need to check any scope, but if it does it should
+        # almost certainly use its own (change sg-recon-admin below).
+        resp = requests.get('https://api.seatgeek.com/2/oauth/token', params={'access_token': access_token})
 
         try:
             resp = json.loads(resp.content)
         except:
             abort(500)
 
-        if resp['status'] != 200:
-            redirect(url_for('oauth'))
-    elif request.endpoint != 'oauth' and request.endpoint != 'sg_authorized':
-        return redirect(url_for('oauth'))
+        if resp['status'] == 200 and "sg-recon-admin" in resp["scope"]:
+            return
+        del session["access_token"]
+    if request.endpoint in ('oauth', 'sg_authorized'):
+        return
+    return redirect(url_for('oauth'))
 
 @app.flask_app.route('/')
 def index():
@@ -72,18 +74,8 @@ def sg_authorized():
     except:
         abort(403)
 
-    user = User.query.filter_by(sg_id=token['user_id']).first()
-    if user is None:
-        user = User(token['user_id'])
-        user.access_token = token['access_token']
-        models.db.session.add(user)
-    else: # a little hack to avoid another query to get the id from a newly created user.
-        user.access_token = token['access_token']
-        models.db.session.merge(user)
-    models.db.session.commit()
-
-    flash('Sick, you are now logged in and can admin the recons', category="success")
-    session['user_id'] = user.id
+    flash('Sick, you are now logged in', category="success")
+    session["access_token"] = token['access_token']
     return redirect(url_for('index'))
 
 @app.flask_app.errorhandler(404)
