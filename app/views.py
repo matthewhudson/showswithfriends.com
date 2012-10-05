@@ -15,7 +15,6 @@ import requests
 
 import app
 from app.plugs.index import IndexView
-import auth
 import models
 from models.user import User
 
@@ -43,7 +42,6 @@ def before_request():
         return redirect(url_for('oauth'))
 
 @app.flask_app.route('/')
-@auth.require_inspect
 def index():
     return render_template('home.html')
 
