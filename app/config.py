@@ -3,13 +3,12 @@ import os
 class Config(object):
     SECRET_KEY = 'REPLACE: SECRET KEY'
     SITE_NAME = 'REPLACE: PROJECT NAME'
-    PORT = 5000
+    PORT = int(os.getenv('PORT'))
 
 class ProductionConfig(Config):
     DEBUG = False
     EXCEPTIONAL_API_KEY = 'e34c6ffc7bf25aef4b8528a29f6d36d8da6da556'
     SQLALCHEMY_DATABASE_URI = os.environ.get("SG_DATABASE_URL", "mysql://delete_enabled:godlikepowers@db-ec2-02.seatgeek.com/tzanalytic_tixcast_ebay")
-    PORT = 9600
     SG_CLIENT_KEY = '' # REPLACE
     SG_CLIENT_SEC = '' # REPLACE
 
@@ -17,7 +16,6 @@ class StagingConfig(Config):
     DEBUG = False
     EXCEPTIONAL_API_KEY = ''
     SQLALCHEMY_DATABASE_URI = os.environ.get("SG_DATABASE_URL", "mysql://delete_enabled:godlikepowers@backup-ec2-02.seatgeek.com/tzanalytic_tixcast_ebay")
-    PORT = 9600
     SG_CLIENT_KEY = '' # REPLACE
     SG_CLIENT_SEC = '' # REPLACE
 
