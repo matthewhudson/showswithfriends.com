@@ -3,7 +3,7 @@ import os
 class Config(object):
     SECRET_KEY = 'REPLACE: SECRET KEY'
     SITE_NAME = 'REPLACE: PROJECT NAME'
-    PORT = int(os.getenv('PORT'))
+    PORT = int(os.getenv('PORT', '5000'))
 
 class ProductionConfig(Config):
     DEBUG = False
