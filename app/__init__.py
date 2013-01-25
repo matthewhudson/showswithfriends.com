@@ -1,5 +1,4 @@
 import os
-import sys
 
 from flask import Flask
 from flask.ext.exceptional import Exceptional
@@ -38,8 +37,9 @@ sg_oauth = oauth.remote_app('seatgeek',
     authorize_url='/oauth',
     consumer_key=flask_app.config['SG_CLIENT_KEY'],
     consumer_secret=flask_app.config['SG_CLIENT_SEC'],
-    request_token_params={'scope': 'sg-recon-admin'} # REPLACE use your own scope(s) here
+    request_token_params={'scope': 'sg-recon-admin'}  # REPLACE use your own scope(s) here
 )
+
 
 @flask_app.teardown_request
 def teardown_request(exception):
