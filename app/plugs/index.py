@@ -1,6 +1,7 @@
 from flask import render_template
 from flask.views import View
 
+
 class BaseIndexView(View):
 
     def __init__(self):
@@ -11,6 +12,7 @@ class BaseIndexView(View):
 
     def render_template(self, context):
         return render_template(self.get_template_name(), **context)
+
 
 class IndexView(BaseIndexView):
 
