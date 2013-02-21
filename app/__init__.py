@@ -9,11 +9,6 @@ from app.models import db
 
 flask_app = Flask(__name__)
 
-
-# NOTE this is below the above due to a circular import issue documented here:
-# http://flask.pocoo.org/docs/patterns/packages/
-import app.views
-
 # Configuration
 if os.getenv('SG_ENV') == 'dev':
     flask_app.config.from_object('app.config.DevelopmentConfig')
@@ -26,6 +21,7 @@ else:
     flask_app.logger.info("Config: Production")
 
 db.init_app(flask_app)
+
 exceptional = Exceptional(flask_app)
 csrf = SeaSurf(flask_app)
 
@@ -52,3 +48,7 @@ try:
     new_relic_app = newrelic.agent.wsgi_application()(flask_app)
 except ImportError:
     print "Could not import New Relic"
+
+# NOTE this is below the above due to a circular import issue documented here:
+# http://flask.pocoo.org/docs/patterns/packages/
+import app.views
