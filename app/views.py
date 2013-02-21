@@ -22,15 +22,12 @@ app.flask_app.add_url_rule('/', view_func=IndexView.as_view('index'))
 
 @app.flask_app.before_request
 def before_request():
-    if app.flask_app.config['DEBUG']:
-        return
+    #if app.flask_app.config['DEBUG']:
+    #    return
 
     access_token = session.get('access_token')
     if access_token:
-        # REPLACE this section is checking to make sure that the
-        # sg-recon-admin scope is present for the token. Your app
-        # might not need to check any scope, but if it does it should
-        # almost certainly use its own (change sg-recon-admin below).
+
         resp = requests.get('https://api.seatgeek.com/2/oauth/token', params={'access_token': access_token})
 
         try:
@@ -38,7 +35,7 @@ def before_request():
         except:
             abort(500)
 
-        if resp['status'] == 200 and "sg-recon-admin" in resp["scope"]:
+        if resp['status'] == 200 and "preferences" in resp["scope"]:
             return
         del session["access_token"]
     if request.endpoint in ('oauth', 'sg_authorized'):
