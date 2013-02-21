@@ -18,8 +18,8 @@ class User(Base):
 
     def __init__(self, api_resp):
         self.sg_id = api_resp["user_id"]
-        self.first_name = api_resp["first_name"]
-        self.last_name = api_resp["last_name"]
+        self.first_name = api_resp.get("first_name")
+        self.last_name = api_resp.get("last_name")
         self.lat = api_resp.get('lat')
         self.lon = api_resp.get('lon')
         self.city = api_resp.get('city')
