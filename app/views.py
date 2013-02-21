@@ -122,7 +122,7 @@ def sg_authorized():
 
     flash('Sick, you are now logged in', category="success")
     session["access_token"] = token['access_token']
-    return redirect(url_for('index'))
+    return redirect('http://whispering-river-5998.herokuapp.com/')
 
 
 @app.flask_app.errorhandler(404)
