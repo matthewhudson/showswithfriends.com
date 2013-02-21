@@ -35,7 +35,7 @@ def before_request():
         except:
             abort(500)
 
-        if resp['status'] == 200 and "preferences" in resp["scope"]:
+        if resp['status'] == 200 and "email" in resp["scope"]:
             return
         del session["access_token"]
     if request.endpoint in ('oauth', 'sg_authorized'):
@@ -69,7 +69,6 @@ def sg_authorized():
     except:
         abort(500)
 
-    # Check the TS
     try:
         resp = requests.get('https://api.seatgeek.com/2/oauth/token', params={'access_token': resp['access_token']})
         token = json.loads(resp.content)
