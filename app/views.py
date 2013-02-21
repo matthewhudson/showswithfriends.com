@@ -4,6 +4,7 @@ import json
 
 from flask import (abort,
                    flash,
+                   g,
                    redirect,
                    render_template,
                    request,
@@ -11,21 +12,23 @@ from flask import (abort,
                    url_for)
 import requests
 
-
 import app
+
 from app.plugs.index import IndexView
 
 
+from models import db
+import app.dal as dal
+from app.models.tables import User
+
 # Rules
-app.flask_app.add_url_rule('/', view_func=IndexView.as_view('index'))
+#app.flask_app.add_url_rule('/', view_func=IndexView.as_view('index'))
 
 
 @app.flask_app.before_request
 def before_request():
-    if app.flask_app.config['DEBUG']:
-        return
-
     access_token = session.get('access_token')
+
     if access_token:
         resp = requests.get('https://api.seatgeek.com/2/oauth/token', params={'access_token': access_token})
 
@@ -34,9 +37,26 @@ def before_request():
         except:
             abort(500)
 
-        if resp['status'] == 200 and "email" in resp["scope"]:
+        if resp['status'] == 200 and "preferences" in resp["scope"]:
+            try:
+                g.user = db.session.query(User).filter_by(sg_id=resp["user_id"]).first()
+            except:
+                g.user = None
+
+            if g.user is None:
+                resp = requests.get('http://api.seatgeek.com/2/me', params = {'access_token' : access_token})
+
+                sg_user = json.loads(resp.content)
+
+                g.user = User(sg_user)
+            
+                db.session.merge(g.user)
+                db.session.commit()
+
             return
+
         del session["access_token"]
+
     if request.endpoint in ('oauth', 'sg_authorized'):
         return
     return redirect(url_for('oauth'))
