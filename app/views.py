@@ -22,8 +22,8 @@ app.flask_app.add_url_rule('/', view_func=IndexView.as_view('index'))
 
 @app.flask_app.before_request
 def before_request():
-    #if app.flask_app.config['DEBUG']:
-    #    return
+    if app.flask_app.config['DEBUG']:
+        return
 
     access_token = session.get('access_token')
     if access_token:
