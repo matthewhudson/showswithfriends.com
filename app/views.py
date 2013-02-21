@@ -27,7 +27,6 @@ def before_request():
 
     access_token = session.get('access_token')
     if access_token:
-
         resp = requests.get('https://api.seatgeek.com/2/oauth/token', params={'access_token': access_token})
 
         try:
