@@ -57,7 +57,7 @@ class UserPerformerPreference(Base):
     user        =   relation(User, primaryjoin=user_id == User.id)
 
 class UserEventAffinity(Base):
-    __tablename__   = 'user_event_actions'
+    __tablename__   = 'user_event_affinity'
 
     id          =   Column(u'id', INTEGER(), primary_key=True)
     user_id     =   Column(u'user_id', INTEGER(), ForeignKey('users.id'))
