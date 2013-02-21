@@ -3,6 +3,7 @@
         <div class="span9">
           <div class="hero-unit">
             <h1>welcome</h1>
+            <p>{% if g and g.user %}{{ g.user.first_name }}{% endif %}</p>
           </div>
         </div><!--/span-->
 {% endblock %}
