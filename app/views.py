@@ -19,7 +19,7 @@ from app.plugs.index import IndexView
 
 from models import db
 import app.dal as dal
-from app.models.tables import User
+from app.models.tables import User, UserPerformerPreference
 
 # Rules
 #app.flask_app.add_url_rule('/', view_func=IndexView.as_view('index'))
@@ -27,6 +27,9 @@ from app.models.tables import User
 
 @app.flask_app.before_request
 def before_request():
+    if app.flask_app.config['DEBUG']:
+        g.user = db.session.query(User).first()
+
     access_token = session.get('access_token')
 
     if access_token:
@@ -44,13 +47,20 @@ def before_request():
                 g.user = None
 
             if g.user is None:
+                # create user
                 resp = requests.get('http://api.seatgeek.com/2/me', params = {'access_token' : access_token})
 
                 sg_user = json.loads(resp.content)
-
                 g.user = User(sg_user)
-            
+                
                 db.session.merge(g.user)
+                
+                # load preferences
+                resp = requests.get("https://api.seatgeek.com/2/preferences", params={'access_token': access_token})
+                resp = json.loads(resp.content)
+                performer_ids = [pref['performer']['id'] for pref in resp['preferences'] if pref['explicit']['preference'] is not None]
+                performer_preferences = map(lambda x: UserPerformerPreference(user=g.user, performer_id=x), performer_ids)
+                db.session.add_all(performer_preferences)
                 db.session.commit()
 
             return
@@ -64,7 +74,23 @@ def before_request():
 
 @app.flask_app.route('/')
 def index():
-    return render_template('home.html')
+    access_token = session.get('access_token')
+    if access_token:
+        resp = requests.get("https://api.seatgeek.com/2/preferences", params={'access_token': access_token})
+    y = json.loads(resp.content)
+    preferences = [z['performer']['name'] for z in y['preferences'] if z['explicit']['preference'] is not None]
+    performer_ids = [z['performer']['id'] for z in y['preferences'] if z['explicit']['preference'] is not None]
+
+    params = {
+        'client_id' : app.flask_app.config['SG_CLIENT_KEY'],
+        'lat' : g.user.lat,
+        'lon' : g.user.lon,
+        'performers.id' : performer_ids
+    }
+
+    resp = requests.get('https://api.seatgeek.com/2/recommendations', params=params)    
+
+    return render_template('home.html', recs=json.loads(resp.content)["recommendations"], prefs=preferences)
 
 
 @app.flask_app.route('/oauth')
