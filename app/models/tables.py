@@ -2,6 +2,8 @@ from sqlalchemy.orm import relation, backref
 from sqlalchemy import *
 
 from sqlalchemy.ext.declarative import declarative_base
+
+from datetime import datetime
 Base = declarative_base()
 
 class User(Base):
@@ -16,8 +18,8 @@ class User(Base):
     city        =   Column(u'city', VARCHAR(length=30))
     state       =   Column(u'state', VARCHAR(length=20))
     sg_access   =   Column(u'sg_access', INTEGER())
-    created_at  =   Column(u'created_at', DATETIME(timezone=False), default=datetime.now())
-    updated_at  =   Column(u'updated_at', DATETIME(timezone=False), default=datetime.now(), onupdate=datetime.now())
+    created_at  =   Column(u'created_at', TIMESTAMP(timezone=False), default=datetime.now())
+    updated_at  =   Column(u'updated_at', TIMESTAMP(timezone=False), default=datetime.now(), onupdate=datetime.now())
 
     def __init__(self, api_resp):
         self.sg_id = api_resp["user_id"]
@@ -37,8 +39,8 @@ class Friendship(Base):
     friend_one  =   Column(u'friend_one', INTEGER(), ForeignKey('users.id'))
     friend_two  =   Column(u'friend_two', INTEGER(), ForeignKey('users.id'))
     status      =   Column(u'status', INTEGER(), default=0)
-    created_at  =   Column(u'created_at', DATETIME(timezone=False), default=datetime.now())
-    updated_at  =   Column(u'updated_at', DATETIME(timezone=False), default=datetime.now(), onupdate=datetime.now())
+    created_at  =   Column(u'created_at', TIMESTAMP(timezone=False), default=datetime.now())
+    updated_at  =   Column(u'updated_at', TIMESTAMP(timezone=False), default=datetime.now(), onupdate=datetime.now())
 
     user_one    =   relation(User, primaryjoin=friend_one == User.id)
     user_two    =   relation(User, primaryjoin=friend_two == User.id)
@@ -49,8 +51,8 @@ class UserPerformerPreference(Base):
     id          =   Column(u'id', INTEGER(), primary_key=True)
     user_id     =   Column(u'user_id', INTEGER(), ForeignKey('users.id'))
     performer_id =  Column(u'performer_id', INTEGER())
-    created_at  =   Column(u'created_at', DATETIME(timezone=False), default=datetime.now())
-    updated_at  =   Column(u'updated_at', DATETIME(timezone=False), default=datetime.now(), onupdate=datetime.now())
+    created_at  =   Column(u'created_at', TIMESTAMP(timezone=False), default=datetime.now())
+    updated_at  =   Column(u'updated_at', TIMESTAMP(timezone=False), default=datetime.now(), onupdate=datetime.now())
 
     user        =   relation(User, primaryjoin=user_id == User.id)
 
