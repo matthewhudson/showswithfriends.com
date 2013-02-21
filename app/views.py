@@ -19,7 +19,7 @@ from app.plugs.index import IndexView
 
 from models import db
 import app.dal as dal
-from app.models.tables import User, UserPerformerPreference
+from app.models.tables import User, UserPerformerPreference, UserEventAffinity
 
 # Rules
 #app.flask_app.add_url_rule('/', view_func=IndexView.as_view('index'))
@@ -61,6 +61,22 @@ def before_request():
                 performer_ids = [pref['performer']['id'] for pref in resp['preferences'] if pref['explicit']['preference'] is not None]
                 performer_preferences = map(lambda x: UserPerformerPreference(user=g.user, performer_id=x), performer_ids)
                 db.session.add_all(performer_preferences)
+
+                # load affinity
+                params = {
+                    'client_id' : app.flask_app.config['SG_CLIENT_KEY'],
+                    'lat' : g.user.lat,
+                    'lon' : g.user.lon,
+                    'performers.id' : performer_ids
+                }
+
+                resp = json.loads(requests.get('https://api.seatgeek.com/2/recommendations', params=params).content)
+
+                recs = resp.get('recommendations')
+                event_affinities = map(lambda x: UserEventAffinity(user=g.user,event_id=x['event']['id'],
+                                                                    recommended=1, seen=0, shared_from=0, shared_to=0, affinity=x['score']),recs)
+                db.session.add_all(event_affinities[:25])
+
                 db.session.commit()
 
             return
@@ -74,23 +90,7 @@ def before_request():
 
 @app.flask_app.route('/')
 def index():
-    access_token = session.get('access_token')
-    if access_token:
-        resp = requests.get("https://api.seatgeek.com/2/preferences", params={'access_token': access_token})
-    y = json.loads(resp.content)
-    preferences = [z['performer']['name'] for z in y['preferences'] if z['explicit']['preference'] is not None]
-    performer_ids = [z['performer']['id'] for z in y['preferences'] if z['explicit']['preference'] is not None]
-
-    params = {
-        'client_id' : app.flask_app.config['SG_CLIENT_KEY'],
-        'lat' : g.user.lat,
-        'lon' : g.user.lon,
-        'performers.id' : performer_ids
-    }
-
-    resp = requests.get('https://api.seatgeek.com/2/recommendations', params=params)    
-
-    return render_template('home.html', recs=json.loads(resp.content)["recommendations"], prefs=preferences)
+    return render_template('home.html')
 
 
 @app.flask_app.route('/oauth')
@@ -122,7 +122,7 @@ def sg_authorized():
 
     flash('Sick, you are now logged in', category="success")
     session["access_token"] = token['access_token']
-    return redirect('http://whispering-river-5998.herokuapp.com/')
+    return redirect(url_for('index'))
 
 
 @app.flask_app.errorhandler(404)
