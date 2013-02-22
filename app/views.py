@@ -113,9 +113,9 @@ def before_request():
                 db.session.add_all([f,f2])
 
             db.session.commit()
-
             return
         else:
+            del session['access_token']        
             return redirect(url_for('oauth'))
 
     if request.endpoint in ('oauth', 'sg_authorized') or 'favicon' in request.url:
@@ -176,8 +176,8 @@ def sg_authorized():
 
     flash('Sick, you are now logged in', category="success")
     session["access_token"] = token['access_token']
-    raise
-    return redirect('/')
+
+    return redirect(url_for('index'))
 
 
 @app.flask_app.errorhandler(404)
