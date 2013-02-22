@@ -120,6 +120,7 @@ def before_request():
 
     if request.endpoint in ('oauth', 'sg_authorized') or 'favicon' in request.url:
         return
+
     return redirect(url_for('oauth'))
 
 
@@ -172,6 +173,7 @@ def sg_authorized():
 
     flash('Sick, you are now logged in', category="success")
     session["access_token"] = token['access_token']
+    raise
     return redirect('/')
 
 
