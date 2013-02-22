@@ -5,17 +5,84 @@ import requests, json
 from app.models.tables import Friendship, User, UserEventAffinity, UserPerformerPreference
 from itertools import permutations, groupby
 
+from flask import g
+
 from random import random
 
-def add_friendships(session, users):
+def user_node(user_dict):
+    return {
+        "name" : user_dict["name"],
+        "id" : user_dict["id"],
+        "class" : "user"
+    }
+
+def node(**kwargs):
+    if kwargs.get('user_dict'):
+        return user_node
+
+    return {
+        "name" : None,
+        "class" : None,
+        "id" : None,
+        "contents" : []
+    }
+
+def find_path(source_nodes, target_nodes):
+    g = app.graph
+    edges = filter(lambda x: x[0] in source_nodes and x[1] in target_nodes, g)
+    edges.sort(key=lambda e: -e[2])
+    if edges:
+        return [edges[0][0], edges[0][1]]
+    return None
+
+def make_children(event, preference_map):
+    friend_preference_map = dict(map(lambda x: (x, preference_map.get(x[0])), event['friends']))
+    performers = event['event']['performers']
+    performer_ids = [x['id'] for x in performers]
+    object_dict = {}
+    for p in performers:
+        object_dict[p['id']] = {"name" : x['name'], "class" : "performer", "id" : x['id']}
+    paths = []
+    for friend in event['friends']:
+        target_ids = friend_preference_map.get(friend)
+        path = find_path(performer_ids, target_ids)
+        if path is not None:
+            path.append(friend[0])
+            paths.append(path)
+
+    return paths
+
+def make_graph(event, preference_map):
+    root = {
+        "name" : event['event']['short_title'],
+        "class" : "event",
+        "id" : event['event']['id'],
+        "contents" : make_children(event, preference_map)
+    }
+    return root
+
+def event_children(event, friends):
+    g = app.graph
+    performers = event['event']['performers']
+    performer_ids = [x['id'] for x in performers]
+
+def event_node(event, friends):
+    ev = event['event']
+    node = {
+        "name" : ev['short_title'],
+        "id" : ev['id'],
+        "class" : "event",
+        "contents" : event_children(event, friends)
+    }
+
+def add_friendships(session, users, rand=2):
     for user_one, user_two in permutations(users, 2):
         f = session.query(Friendship).filter_by(user_one=user_one, user_two=user_two)
-        if f.count() == 0 and random() < .5:
+        if f.count() == 0 and random() < rand:
             f = Friendship(user_one=user_one, user_two=user_two, status=1)
             f = Friendship(user_two=user_one, user_one=user_two, status=1)
             session.merge(f)
     session.commit()
-
 
 def add_affinity(session, user):
     # load affinity
@@ -94,6 +161,9 @@ def get_event_friend_mapping(session, user, event_ids):
         new_list = event_friend_map[key] + map(lambda x: (x[1], x[2]), list(q))
         new_list.sort(key=lambda e: -e[1])
         event_friend_map[key] = new_list
+
+
+
     return event_friend_map
 
 def deduplicate(events):
@@ -141,20 +211,23 @@ def get_user_events(session, user):
     resp = requests.get('http://api.seatgeek.com/2/events', params={'id' : ids, 'per_page' : 50})
     content = json.loads(resp.content)
     return get_events_from_api_result(session, user, resp)
-    friend_map = get_event_friend_mapping(session, user, ids)
-    events = resp['events']
-    events = deduplicate(events)
-    events = map(lambda x: {"friends" : friend_map.get(x['id'],[]),"event" : x},events)
 
-    return events
+def make_preference_map(session):
+    upp = session.query(UserPerformerPreference)
+    preference_map = {}
+    for k, v in groupby(upp, key=lambda x: x.user_id):
+        preference_map[k] = [x.performer_id for x in v]
+    return preference_map
 
 def get_events_from_api_result(session, user, resp):
+    pref_map = make_preference_map(session)
     resp = json.loads(resp.content)
     events = resp['events']
     events = deduplicate(events)
     ids = [x['id'] for x in events]
     friend_map = get_event_friend_mapping(session, user, ids)
     events = map(lambda x: {"friends" : friend_map.get(x['id'],[]),"event" : x},events)
+    events = map(lambda x: {"friends" : x['friends'], "event" : x['event'], "graph" : make_graph(x, pref_map)}, events)
     scores = map(score_event_for_user, events)
     x = zip(events, scores)
     x.sort(key=lambda e: -e[1])

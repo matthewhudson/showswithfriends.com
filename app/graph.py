@@ -31,4 +31,6 @@ def make_graph(mapping=None):
             except:
                 break
             graph.append((int(source), int(target), float(weight)))
-    return graph
+    m = mapping
+    g2 = map(lambda x: (m[x[0]], m[x[1]], x[2]) , graph)
+    return g2

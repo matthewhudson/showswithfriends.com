@@ -30,7 +30,8 @@ from app.helpers import (
         get_user_friends,
         get_user_events,
         add_affinity,
-        get_venue_events
+        get_venue_events,
+        add_friendships
     )
 
 # Rules
@@ -85,6 +86,9 @@ def set_user(resp):
 def before_request():
     access_token = session.get('access_token')
 
+    if app.flask_app.debug:
+        g.user = db.session.query(User).filter_by(sg_id=36197).first()
+
     if access_token:
         resp = get_with_authentication('https://api.seatgeek.com/2/oauth/token')
 
@@ -130,6 +134,18 @@ def before_request():
 
     return redirect(url_for('oauth'))
 
+@app.flask_app.route('/add_friend', methods=['GET'])
+def add_friend():
+    if g.user is None:
+        g.user = db.session.query(User).filter(User.id == 202).first()
+    user_id = request.args.get('user_id')
+    user = db.session.query(User).filter(User.id == user_id).first()
+    add_friendships(db.session, [g.user, user])
+    flash('friend added')
+    print 'friend added'
+    return redirect(url_for('index'))
+
+
 @app.flask_app.route('/')
 def index():
     if g.user is None:
@@ -139,12 +155,12 @@ def index():
     return_response = {
         "tracker" : get_user_tracker(db.session, g.user),
         "friends" : get_user_friends(db.session, g.user),
-        "events" : events
+        "events" : events[0]
     }
 
-    #return json.dumps(return_response)
+    return json.dumps(return_response)
 
-    return render_template('home.html', res = return_response)
+    #return render_template('home.html', res = return_response)
 
 
 @app.flask_app.route('/oauth')
