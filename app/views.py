@@ -48,11 +48,26 @@ def post_with_authentication(url, *args, **kwargs):
     kwargs['params'] = params
     return requests.post(url, **kwargs)
 
+def set_user(resp):
+    try:
+        g.user = db.session.query(User).filter_by(sg_id=resp["user_id"]).first()
+    except:
+        g.user = None
+
+    if g.user is None:
+        # create user
+        resp = requests.get('http://api.seatgeek.com/2/me', params = {'access_token' : session['access_token']})
+
+        sg_user = json.loads(resp.content)
+        g.user = User(sg_user)
+        try:
+            db.session.add(g.user)
+        except:
+            pass
+
+
 @app.flask_app.before_request
 def before_request():
-    if app.flask_app.config['DEBUG']:
-        g.user = db.session.query(User).first()
-
     access_token = session.get('access_token')
 
     if access_token:
@@ -64,54 +79,40 @@ def before_request():
             abort(500)
 
         if resp['status'] == 200 and "preferences" in resp["scope"]:
-            try:
-                g.user = db.session.query(User).filter_by(sg_id=resp["user_id"]).first()
-            except:
-                g.user = None
-
-            if g.user is None:
-                # create user
-                resp = requests.get('http://api.seatgeek.com/2/me', params = {'access_token' : access_token})
-
-                sg_user = json.loads(resp.content)
-                g.user = User(sg_user)
-                try:
-                    db.session.add(g.user)
-                except:
-                    pass
+            set_user(resp)
                 
                 # load preferences
-                resp = requests.get("https://api.seatgeek.com/2/preferences", params={'access_token': access_token})
-                resp = json.loads(resp.content)
-                performer_ids = [pref['performer']['id'] for pref in resp['preferences'] if pref['explicit']['preference'] is not None]
-                performer_preferences = map(lambda x: UserPerformerPreference(user=g.user, performer_id=x), performer_ids)
-                db.session.add_all(performer_preferences)
+            resp = requests.get("https://api.seatgeek.com/2/preferences", params={'access_token': access_token})
+            resp = json.loads(resp.content)
+            performer_ids = [pref['performer']['id'] for pref in resp['preferences'] if pref['explicit']['preference'] is not None]
+            performer_preferences = map(lambda x: UserPerformerPreference(user=g.user, performer_id=x), performer_ids)
+            db.session.add_all(performer_preferences)
 
-                # load affinity
-                params = {
-                    'client_id' : app.flask_app.config['SG_CLIENT_KEY'],
-                    'lat' : g.user.lat,
-                    'lon' : g.user.lon,
-                    'performers.id' : performer_ids,
-                    'per_page' : 50
-                }
+            # load affinity
+            params = {
+                'client_id' : app.flask_app.config['SG_CLIENT_KEY'],
+                'lat' : g.user.lat,
+                'lon' : g.user.lon,
+                'performers.id' : performer_ids,
+                'per_page' : 50
+            }
 
-                resp = json.loads(requests.get('https://api.seatgeek.com/2/recommendations', params=params).content)
+            resp = json.loads(requests.get('https://api.seatgeek.com/2/recommendations', params=params).content)
 
-                recs = resp.get('recommendations')
-                event_affinities = map(lambda x: UserEventAffinity(user=g.user,event_id=x['event']['id'],
+            recs = resp.get('recommendations')
+            event_affinities = map(lambda x: UserEventAffinity(user=g.user,event_id=x['event']['id'],
                                                                     recommended=1, seen=0, shared_from=0, shared_to=0, affinity=x['score']),recs)
 
-                db.session.add_all(event_affinities[:25])
+            db.session.add_all(event_affinities[:25])
 
-                # make everybody my friend
-                me = db.session.query(User).filter_by(sg_id=207935).first()
-                if me is not None:
-                    f = Friendship(user_one=me, user_two=g.user, status=1)
-                    f2 = Friendship(user_two=me, user_one=g.user, status=1)
-                    db.session.add_all([f,f2])
+            # make everybody my friend
+            me = db.session.query(User).filter_by(sg_id=207935).first()
+            if me is not None:
+                f = Friendship(user_one=me, user_two=g.user, status=1)
+                f2 = Friendship(user_two=me, user_one=g.user, status=1)
+                db.session.add_all([f,f2])
 
-                db.session.commit()
+            db.session.commit()
 
             return
         else:
@@ -119,6 +120,7 @@ def before_request():
 
     if request.endpoint in ('oauth', 'sg_authorized'):
         return
+    raise
     return redirect(url_for('oauth'))
 
 
@@ -170,7 +172,7 @@ def sg_authorized():
         abort(403)
 
     flash('Sick, you are now logged in', category="success")
-    #session["access_token"] = token['access_token']
+    session["access_token"] = token['access_token']
     return redirect('/')
 
 
