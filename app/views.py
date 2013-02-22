@@ -115,11 +115,10 @@ def before_request():
 
             return
 
-        del session["access_token"]
+        return redirect(url_for('oauth'))
 
     if request.endpoint in ('oauth', 'sg_authorized'):
         return
-    abort(403)
     return redirect(url_for('oauth'))
 
 
