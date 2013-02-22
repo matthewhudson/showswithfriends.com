@@ -29,7 +29,8 @@ from app.helpers import (
         get_user_tracker,
         get_user_friends,
         get_user_events,
-        add_affinity
+        add_affinity,
+        get_venue_events
     )
 
 # Rules
@@ -47,6 +48,17 @@ def post_with_authentication(url, *args, **kwargs):
     kwargs['params'] = params
     return requests.post(url, **kwargs)
 
+def get_events(args):
+    if args:
+        venue_id = args.get('venue')
+        if venue_id:
+            return get_venue_events(db.session, g.user, venue_id)
+        user_id = args.get('user_id')
+        if user_id:
+            user = db.session.query(User).filter(User.id==user_id).first()
+            return get_user_events(db.session, user)
+    return get_user_events(db.session, g.user)
+    
 def set_user(resp):
     try:
         g.user = db.session.query(User).filter_by(sg_id=resp["user_id"]).first()
@@ -118,18 +130,19 @@ def before_request():
 
     return redirect(url_for('oauth'))
 
-
 @app.flask_app.route('/')
 def index():
     if g.user is None:
         return render_template('home.html')
+    args = request.args
+    events = get_events(args)
     return_response = {
         "tracker" : get_user_tracker(db.session, g.user),
         "friends" : get_user_friends(db.session, g.user),
-        "events" : get_user_events(db.session, g.user)
+        "events" : events
     }
 
-    #return json.dumps(return_response)
+    return json.dumps(return_response)
 
     return render_template('home.html', res = return_response)
 
