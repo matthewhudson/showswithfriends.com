@@ -114,8 +114,8 @@ def before_request():
                 db.session.commit()
 
             return
-
-        return redirect(url_for('oauth'))
+        else:
+            return redirect(url_for('oauth'))
 
     if request.endpoint in ('oauth', 'sg_authorized'):
         return
