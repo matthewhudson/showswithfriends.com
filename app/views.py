@@ -120,7 +120,6 @@ def before_request():
 
     if request.endpoint in ('oauth', 'sg_authorized') or 'favicon' in request.url:
         return
-    raise
     return redirect(url_for('oauth'))
 
 
