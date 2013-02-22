@@ -71,10 +71,7 @@ def before_request():
     access_token = session.get('access_token')
 
     if 'code' in request.url and access_token is None:
-        x = request.endpoint
-        y = request.url
-        z = access_token
-        raise
+        return
 
     if access_token:
         resp = get_with_authentication('https://api.seatgeek.com/2/oauth/token')
