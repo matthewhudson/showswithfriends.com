@@ -163,5 +163,5 @@ $(function () {
     });
   });
 
-  $('#footer').css('marginTop', $(window).height() - 450);
+  $('#footer').css('marginTop', $(window).height() - 300);
 });
