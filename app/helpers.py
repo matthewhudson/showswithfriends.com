@@ -10,7 +10,7 @@ from random import random
 def add_friendships(session, users):
     for user_one, user_two in permutations(users, 2):
         f = session.query(Friendship).filter_by(user_one=user_one, user_two=user_two)
-        if f.count() == 0 and random() < .2:
+        if f.count() == 0 and random() < .5:
             f = Friendship(user_one=user_one, user_two=user_two, status=1)
             f = Friendship(user_two=user_one, user_one=user_two, status=1)
             session.merge(f)
@@ -109,15 +109,47 @@ def get_user_friends(session, user):
     friend_list = map(user_to_dict, list(friend_set))
     return friend_list
 
+def get_venue_events(session, user, venue_id):
+    params = {
+        "venue.id" : venue_id,
+        "taxonomies.id" : 2000000
+    }
+    resp = requests.get('http://api.seatgeek.com/2/events',params=params)
+    return get_events_from_api_result(session, user, resp)
+
+def score_event_for_user(event):
+    n_friends = len(event["friends"])
+    self_score = event["event"]["score"]
+    if n_friends > 0:
+        friend_score = sum(map(lambda x: x[1], event["friends"]))
+    if self_score is None:
+        return 0
+    return self_score
+
 def get_user_events(session, user):
     eq = session.query(UserEventAffinity).filter_by(user_id=user.id)
-    ids = list(set([e.event_id for e in eq]))
+    ids = [e.event_id for e in eq]
     resp = requests.get('http://api.seatgeek.com/2/events', params={'id' : ids, 'per_page' : 50})
-    resp = json.loads(resp.content)
+    content = json.loads(resp.content)
+    return get_events_from_api_result(session, user, resp)
     friend_map = get_event_friend_mapping(session, user, ids)
     events = resp['events']
     events = deduplicate(events)
     events = map(lambda x: {"friends" : friend_map.get(x['id'],[]),"event" : x},events)
+
+    return events
+
+def get_events_from_api_result(session, user, resp):
+    resp = json.loads(resp.content)
+    events = resp['events']
+    events = deduplicate(events)
+    ids = [x['id'] for x in events]
+    friend_map = get_event_friend_mapping(session, user, ids)
+    events = map(lambda x: {"friends" : friend_map.get(x['id'],[]),"event" : x},events)
+    scores = map(score_event_for_user, events)
+    x = zip(events, scores)
+    x.sort(key=lambda e: -e[1])
+    events, scores = zip(*x)
     return events
 
 def get_user_tracker(session, user):
