@@ -26,7 +26,7 @@ from app.models.tables import (
         Friendship)
 
 # Rules
-#app.flask_app.add_url_rule('/', view_func=IndexView.as_view('index'))
+app.flask_app.add_url_rule('/', view_func=IndexView.as_view('index'))
 
 def get_events():
     eq = db.session.query(UserEventAffinity).filter_by(user_id=g.user.id)
