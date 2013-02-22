@@ -71,6 +71,8 @@ def before_request():
     access_token = session.get('access_token')
 
     if 'code' in request.url:
+        print request.endpoint
+        print request.url
         print session["access_token"]
         print access_token
         raise
