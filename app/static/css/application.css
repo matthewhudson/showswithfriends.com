@@ -567,3 +567,14 @@ p.lead.sub {
   left: 0;
   margin-top:300px;
 }
+.performers-id {
+  display: none;
+}
+.spotify {
+  height: 100px;
+}
+#overlay h5 {
+  font-size: 39px;
+  margin: 0;
+  text-align: right;
+}

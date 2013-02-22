@@ -14,8 +14,8 @@
 <div class="content container">
   <div class="row">
 
-    {% if events|length %}
-      {% for event in events %}
+    {% if res.events|length %}
+      {% for event in res.events %}
       	{% set event = event.event %}
         <div class="box event span10 offset2">
           <div class="arrow">
@@ -24,6 +24,7 @@
           </div>
           <section>
             <span class="id">{{ event.id }}</span>
+            <span class="performers-id">{{ event.performers[0].id }}</span>
             <div class="page-header">
               <h3 class="title"><b>{{ event.title }}</b></h3>
             </div>
@@ -58,6 +59,7 @@
           <p class="lead venue-city"><%- rc.venue_city %></p>
           <p class="lead url"><%- rc.url %></p>
           <p><a class="btn btn-large btn-inverse" href="#">Learn More &rarr; </a></p>
+          <span class="performers-id"><%- rc.performers_id %></span>
         </div>
       </div>
   </section>
@@ -71,13 +73,21 @@
       <div class="container-inner"> 
         <div class="container">
           <h4 class="title"><%- rc.title %></h4>
-          <p class="lead datetime"><%- rc.datetime %></p>
-          <p class="lead venue-name"><%- rc.venue_name %></p>
-          <p class="lead venue-city"><%- rc.venue_city %></p>
-          <iframe src="https://embed.spotify.com/?uri=spotify:user:erebore:playlist:788MOXyTfcUb1tdw4oC7KJ" width="450" height="200" frameborder="0" allowtransparency="true"></iframe>
-          
 
-          <p><a class="btn btn-large btn-inverse" href="<%- rc.url %>" target="_blank">Buy Tickets &rarr; </a></p>
+          <div class="row">
+            <div class="span5">
+              <p class="lead datetime"><%- rc.datetime %></p>
+              <p class="lead venue-name"><%- rc.venue_name %></p>
+              <p class="lead venue-city"><%- rc.venue_city %></p>
+
+              <div class="spotify"></div>
+
+              <p><a class="btn btn-large btn-inverse" href="<%- rc.url %>" target="_blank">Buy Tickets &rarr; </a></p>
+            </div>
+            <div class="span7">
+              <h5>Friends</h5>
+            </div>
+          </div>
         </div>
       </div> 
     </div> 

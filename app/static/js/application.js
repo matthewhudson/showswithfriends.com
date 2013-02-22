@@ -21,6 +21,29 @@ $(function () {
       }
     });
 
+    $(document).keydown(function (evt) {
+      evt = evt || window.event;
+      var charCode = evt.which || evt.keyCode;
+      var charStr = String.fromCharCode(charCode);
+
+      // BACKSPACE
+      if (charCode === 8) {
+        evt.preventDefault();
+        that.hide();
+      }
+
+      // ENTER
+      if (charCode === 13) {
+        that.hide();
+      }
+
+      // ESCAPE
+      if (charCode === 27) {
+        that.hide();
+      }
+    });
+
+
     that.show = function () {
 
       $('body').css('overflow', 'hidden');
@@ -33,8 +56,6 @@ $(function () {
     };
 
     that.addContent = function(data) {
-      console.log("inserting", '<img src="' + data.image + '" />' );
-      
       my.el.html(my.template({
         title : data.title,
         url : data.url,
@@ -43,14 +64,14 @@ $(function () {
         image : data.image,
         datetime : data.datetime
       }));
-$('.artist-bg').html('<img src="' + data.image + '" />');
+      $('.artist-bg').html('<img src="' + data.image + '" />');
     };
     return that;
   };
 
   $('.event').livequery(function () {
       if (!first_event) first_event = $(this).find('.id').html()
-    $(this).find('.datetime').html(Date.parse($(this).find('.datetime').html()).toString("dddd, MMMM d, yyyy @ h:mm:ss tt"));
+    $(this).find('.datetime').html(Date.parse($(this).find('.datetime').html()).toString("dddd, MMMM d, yyyy @ h:mm tt"));
   });
 
   var $overview = $('#overview')
@@ -76,7 +97,8 @@ $('.artist-bg').html('<img src="' + data.image + '" />');
         venue_name : $(this).find('.venue-name').text(),
         venue_city : $(this).find('.venue-city').html(),
         image : $(this).find('.image').attr('src'),
-        datetime : $(this).find('.datetime').html()
+        datetime : $(this).find('.datetime').html(),
+        performers_id : $(this).find('.performers-id').html()
       }));
       $hero.find('.image').hide().fadeIn(250);
       $overview.stop(true, true).fadeTo('slow', 0.95).fadeTo('fast', 1.0);
@@ -123,9 +145,20 @@ $('.artist-bg').html('<img src="' + data.image + '" />');
         venue_name : data.find('.venue-name').html(),
         venue_city : data.find('.venue-city').html(),
         image : data.find('.image').attr('src'),
-        datetime : data.find('.datetime').html()
+        datetime : data.find('.datetime').html(),
+        spotify : 'spotify:user:erebore:playlist:788MOXyTfcUb1tdw4oC7KJ'
       })
       modal.show();
+
+      // Load Spotify if performers.links.provider === spotify
+      seatgeek.performers({ 'id': data.find('.performers-id').html() }, function (performer) {
+        if (performer.performers[0].links.length)
+        _.each(performer.performers[0].links, function (v, k) {
+          if (v.provider === "spotify") {
+            $('.spotify').html('<iframe src="https://embed.spotify.com/?uri=' + v.id + '" width="450" height="100" frameborder="0" allowtransparency="true"></iframe>')
+          }
+        })
+      });
       return false;
     });
   });
