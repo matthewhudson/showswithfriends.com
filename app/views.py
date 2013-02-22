@@ -158,6 +158,7 @@ def sg_authorized():
     }
     resp = requests.get("https://api.seatgeek.com/2/oauth/access_token", params=params)
     if resp is None:
+        raise
         abort(403)
 
     try:
