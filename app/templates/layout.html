@@ -17,6 +17,7 @@
         <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     </head>
     <body>
+      <a name="top" id="top"></a>
       <div id="overlay"></div>
 
       <div class="navbar navbar-fixed-top">
@@ -35,7 +36,9 @@
       {% block content %}
       {% endblock %}
 
+
       <div id="footer">
+        <a id="go-to-top" class="btn btn-primary btn-large" href="#top">Go back to top &uarr;</a>
         <p>Made with all the love in the world by <a href="http://twitter.com/steve_rit">@steve_rit</a> and <a href="http://twitter.com/matthewgh">@matthewgh</a> at a <a href="http://seatgeek.com">SeatGeek</a> hackathon.</p>
       </div>
 
