@@ -6,7 +6,6 @@ $(function () {
 
   _.templateSettings.variable = "rc";
 
-  var event_template = _.template($("script.event-template").html());
 
   var hero_template = _.template($("script.hero-template").html());
 
@@ -45,21 +44,9 @@ $(function () {
     return that;
   };
 
-
-  var $content = $(".content .row");
-  seatgeek.events({ sort: 'score.desc' , 'taxonomies.id': 2000000 }, function (d) {
-    _.each(d.events, function (event) {
-      console.log(event);
-      if (!first_event) first_event = event.id.toString();
-      $content.append(event_template({
-        id: event.id,
-        title: event.title,
-        url: event.url,
-        venue: event.venue,
-        image: event.performers[0].image || '/assets/img/head-center-experiment.jpg',
-        datetime: Date.parse(event.datetime_utc).toString("dddd, MMMM d, yyyy @ h:mm:ss tt")
-      }));
-    });
+  $('.event').livequery(function () {
+      if (!first_event) first_event = $(this).find('.id').html()
+    $(this).find('.datetime').html(Date.parse($(this).find('.datetime').html()).toString("dddd, MMMM d, yyyy @ h:mm:ss tt"));
   });
 
   var $hero = $('#overview .container .info');
@@ -86,7 +73,7 @@ $(function () {
         image : $(this).find('.image').attr('src'),
         datetime : $(this).find('.datetime').html()
       }));
-
+      $hero.find('.image').hide().fadeIn(250)
       // HACK
       body_height = $('body').height()
     }, {

@@ -1,76 +1,88 @@
 {% extends "layout.html" %}
 {% block content %}
 <header class="jumbotron subhead" id="overview">
-        <div class="container">
-          <div class="intro">
-            <h1>Shows with Friends</h1>
-            <p class="lead">Find concerts your friends also want to see!</p>
-            <p class="lead sub">A <a href="http://seatgeek.com">SeatGeek</a> hackathon project by <a href="http://twitter.com/steve_rit">@steve_rit</a> and <a href="http://twitter.com/matthewgh">@matthewgh</a></p>
+  <div class="container">
+    <div class="intro">
+      <h1>Shows with Friends</h1>
+      <p class="lead">Find concerts your friends also want to see!</p>
+      <p class="lead sub">A <a href="http://seatgeek.com">SeatGeek</a> hackathon project by <a href="http://twitter.com/steve_rit">@steve_rit</a> and <a href="http://twitter.com/matthewgh">@matthewgh</a></p>
+    </div>
+    <div class="info"></div>
+  </div>
+</header>
+
+<div class="content container">
+  <div class="row">
+
+    {% if events|length %}
+      {% for event in events %}
+      	{% set event = event.event %}
+        <div class="box event span10 offset2">
+          <div class="arrow">
+            <div class="arrow-inner"></div>
+            <div class="arrow-outer"></div>
           </div>
-          <div class="info"></div>
-        </div>
-      </header>
-
-      <div class="content container"><div class="row"></div></div>
-
-      <script type="text/template" class="hero-template">
-        <section>
-          <div class="row-fluid">
-                <div class="preview span4">
-                  <img class="image" src="<%- rc.image %>" />
-                  <div class="line"></div>
-                </div>
-                <div class="span8">
-                  <h1 class="title"><%- rc.title %></h1>
-                  <p class="lead datetime"><%- rc.datetime %></p>
-                  <p class="lead venue-name"><%- rc.venue_name %></p>
-                  <p class="lead venue-city"><%- rc.venue_city %></p>
-                  <p class="lead url"><%- rc.url %></p>
-                  <p><a class="btn btn-large btn-inverse" href="#">Learn More &rarr; </a></p>
-                </div>
-              </div>
-        </section>
-      </script>
-
-      <script type="text/template" class="event-template">
-          <div class="box event span10 offset2">
-            <div class="arrow">
-              <div class="arrow-inner"></div>
-              <div class="arrow-outer"></div>
+          <section>
+            <span class="id">{{ event.id }}</span>
+            <div class="page-header">
+              <h3 class="title"><b>{{ event.title }}</b></h3>
             </div>
-            <section>
-              <span class="id"><%- rc.id %></span>
-              <div class="page-header">
-                <h3 class="title"><b><%- rc.title %></b></h3>
-              </div>
-              <span class="lead datetime"><%- rc.datetime %></span>
-              
-              <p class="lead venue-name"><%- rc.venue.name %>, <%- rc.venue.city %></p>
-              <p class="lead url"><%- rc.url %></p>
+            <span class="lead datetime">{{ event.datetime_utc }}</span>
+            
+            <p class="lead venue-name">{{ event.venue.name }}, {{ event.venue.city }}</p>
+            <p class="lead url">{{ event.url }}</p>
+            {% if event.performers[0].image %}
+              <img class="image" src="{{ event.performers[0].image }}" />
+            {% else %}
+              <img class="image" src="/static/img/head-center-experiment.jpg" />
+            {% endif %}
+            <img class="map" src="http://maps.googleapis.com/maps/api/staticmap?center={{ event.venue.location.lat }},{{ event.venue.location.lon }}&zoom=11&size=200x179&sensor=false" /> 
+          </section>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
 
-              <img class="image" src="<%- rc.image %>" />
-              <img class="map" src="http://maps.googleapis.com/maps/api/staticmap?center=<%- rc.venue.location.lat %>,<%- rc.venue.location.lon %>&zoom=11&size=200x179&sensor=false" /> 
-            </section>
-          </div>
-      </script>
+<script type="text/template" class="hero-template">
+  <section>
+    <div class="row-fluid">
+        <div class="preview span4">
+          <img class="image" src="<%- rc.image %>" />
+          <div class="line"></div>
+        </div>
+        <div class="span8">
+          <h1 class="title"><%- rc.title %></h1>
+          <p class="lead datetime"><%- rc.datetime %></p>
+          <p class="lead venue-name"><%- rc.venue_name %></p>
+          <p class="lead venue-city"><%- rc.venue_city %></p>
+          <p class="lead url"><%- rc.url %></p>
+          <p><a class="btn btn-large btn-inverse" href="#">Learn More &rarr; </a></p>
+        </div>
+      </div>
+  </section>
+</script>
 
-      <script type="text/template" class="modal-template">
-          <div class="artist-bg"></div>
-          <div class="container-outer">
-            <div class="container-middle"> 
-              <div class="container-inner"> 
-                <div class="container">
-                  <h4 class="title"><%- rc.title %></h4>
-                  <p class="lead datetime"><%- rc.datetime %></p>
-                  <p class="lead venue-name"><%- rc.venue_name %></p>
-                  <p class="lead venue-city"><%- rc.venue_city %></p>
-                  <iframe src="https://embed.spotify.com/?uri=spotify:user:erebore:playlist:788MOXyTfcUb1tdw4oC7KJ" width="450" height="200" frameborder="0" allowtransparency="true"></iframe>
-                  
 
-                  <p><a class="btn btn-large btn-inverse" href="<%- rc.url %>" target="_blank">Buy Tickets &rarr; </a></p>
-                </div>
-              </div> 
-            </div> 
-          </div> 
-      </script>
+<script type="text/template" class="modal-template">
+  <div class="artist-bg"></div>
+  <div class="container-outer">
+    <div class="container-middle"> 
+      <div class="container-inner"> 
+        <div class="container">
+          <h4 class="title"><%- rc.title %></h4>
+          <p class="lead datetime"><%- rc.datetime %></p>
+          <p class="lead venue-name"><%- rc.venue_name %></p>
+          <p class="lead venue-city"><%- rc.venue_city %></p>
+          <iframe src="https://embed.spotify.com/?uri=spotify:user:erebore:playlist:788MOXyTfcUb1tdw4oC7KJ" width="450" height="200" frameborder="0" allowtransparency="true"></iframe>
+          
+
+          <p><a class="btn btn-large btn-inverse" href="<%- rc.url %>" target="_blank">Buy Tickets &rarr; </a></p>
+        </div>
+      </div> 
+    </div> 
+  </div> 
+</script>
+
+
 {% endblock %}

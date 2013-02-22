@@ -7,7 +7,7 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Shows with Friends</title>
+        <title>Shows with Friends | SeatGeek Hackathon Project</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
@@ -23,10 +23,19 @@
         <div class="navbar-inner">
           <div class="container">
             <a class="brand" href="#">SeatGeek</a>
+              <ul class="nav pull-right">
+                <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">More</a>
+                  <ul class="dropdown-menu">
+                    <li><a href="http://github.com/seatgeek/sg-css/">Source</a></li>
+                    <li><a href="http://github.com/seatgeek/sg-css/issues/">Issues</a></li>
+                  </ul>
+                </li>
+              </ul>
           </div>
         </div>
       </div>
-
+    
       {% block content %}
       {% endblock %}
 
@@ -38,6 +47,49 @@
       <script type="text/javascript" src="/static/js/waypoints.min.js"></script>
       <script type="text/javascript" src="/static/js/seatgeek.js"></script>
       <script type="text/javascript" src="/static/js/application.js"></script>
+      <script type="text/javascript">
+      // http://cameronspear.com/blog/twitter-bootstrap-dropdown-on-hover-plugin/?codekitCB=380518149.116308
+      // outside the scope of the jQuery plugin to
+      // keep track of all dropdowns
+      var $allDropdowns = $();
+
+      // if instantlyCloseOthers is true, then it will instantly
+      // shut other nav items when a new one is hovered over
+      $.fn.dropdownHover = function(options) {
+
+          // the element we really care about
+          // is the dropdown-toggle's parent
+          $allDropdowns = $allDropdowns.add(this.parent());
+
+          return this.each(function() {
+              var $this = $(this).parent(),
+                  defaults = {
+                      delay: 500,
+                      instantlyCloseOthers: true
+                  },
+                  data = {
+                      delay: $(this).data('delay'),
+                      instantlyCloseOthers: $(this).data('close-others')
+                  },
+                  options = $.extend(true, {}, defaults, options, data),
+                  timeout;
+
+              $this.hover(function() {
+                  if(options.instantlyCloseOthers === true)
+                      $allDropdowns.removeClass('open');
+
+                  window.clearTimeout(timeout);
+                  $(this).addClass('open');
+              }, function() {
+                  timeout = window.setTimeout(function() {
+                      $this.removeClass('open');
+                  }, options.delay);
+              });
+          });
+      };  
+      $('.dropdown-toggle').dropdownHover();
+
+      </script>
     </body>
 </html>
   
