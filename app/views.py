@@ -170,7 +170,7 @@ def sg_authorized():
         abort(403)
 
     flash('Sick, you are now logged in', category="success")
-    session["access_token"] = token['access_token']
+    #session["access_token"] = token['access_token']
     return redirect('/')
 
 
