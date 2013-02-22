@@ -15,8 +15,9 @@
   <div class="row">
 
     {% if res.events|length %}
-      {% for event in res.events %}
-      	{% set event = event.event %}
+      {% for ev in res.events %}
+        {% set friends = ev.friends %}
+        {% set event = ev.event %}
         <div class="box event span10 offset2">
           <div class="arrow">
             <div class="arrow-inner"></div>
@@ -38,7 +39,7 @@
               <img class="image" src="/static/img/head-center-experiment.jpg" />
             {% endif %}
             <!--<img class="map" src="http://maps.googleapis.com/maps/api/staticmap?center={{ event.venue.location.lat }},{{ event.venue.location.lon }}&zoom=11&size=200x179&sensor=false" /> -->
-            <div class="friend-count">{{ event.friends|length }}</div>
+            <div class="friend-count">{{ friends|length }}</div>
           </section>
         </div>
       {% endfor %}
@@ -60,7 +61,7 @@
           <p class="lead venue-city"><%- rc.venue_city %></p>
           <p class="lead url"><%- rc.url %></p>
           <p><a class="btn btn-large btn-inverse" href="#">You have 
-          <span class="friend-count"><%- rc.friends|length  %></span> friends interested &rarr; </a></p>
+          <span class="friend-count"><%- rc.friend_count  %></span> friends interested &rarr; </a></p>
           <span class="performers-id"><%- rc.performers_id %></span>
         </div>
       </div>
@@ -87,7 +88,7 @@
               <p><a class="btn btn-large btn-inverse" href="<%- rc.url %>" target="_blank">Buy Tickets &rarr; </a></p>
             </div>
             <div class="span7">
-              <h5>Friends</h5>
+              <!-- <h5>Friends</h5>-->
               <div class="friends"></div>
             </div>
           </div>

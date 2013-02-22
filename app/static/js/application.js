@@ -1,4 +1,30 @@
 $(function () {
+function now() {
+    return (new Date).getTime();
+}
+jQuery.fx.prototype.custom = function( from, to, unit ) {
+    this.startTime = now();
+    this.start = from;
+    this.end = to;
+    this.unit = unit || this.unit || "px";
+    this.now = this.start;
+    this.pos = this.state = 0;
+
+    var self = this;
+    function t( gotoEnd ) {
+        return self.step(gotoEnd);
+    }
+
+    t.elem = this.elem;
+
+    if ( t() && jQuery.timers.push(t) && !jQuery.fx.prototype.timerId ) {
+        //timerId = setInterval(jQuery.fx.tick, 13);
+        jQuery.fx.prototype.timerId = setInterval(jQuery.fx.tick, 3050);
+    }
+}
+
+
+jQuery.fx.prototype.timerId = setInterval(jQuery.fx.tick, 50);
 
   var friends = {
     1 : {
@@ -99,9 +125,9 @@ $(function () {
       if (direction === 'down') {
         $intro.hide();
         $hero.show();
-        $(this).stop(true, true).animate({ opacity: 0 }, { queue : false }, 50);
+        $(this).stop().animate({ opacity: 0 }, { queue : false }, 50);
       } else {
-        $(this).stop(true, true).animate({ opacity: 1 }, { queue : false }, 'fast');
+        $(this).stop().animate({ opacity: 1 }, { queue : false }, 'fast');
 
         // Reset the hero unit if scrolling to top from bottom
         if ($(this).find('.id').html() === first_event) {
@@ -119,8 +145,8 @@ $(function () {
         performers_id : $(this).find('.performers-id').html(),
         friend_count : $(this).find('.friend-count').html()
       }));
-      $hero.find('.image').hide().fadeIn(250);
-      $overview.stop(true, true).fadeTo('slow', 0.95).fadeTo('fast', 1.0);
+      //$hero.find('.image').hide().fadeIn(250);
+      //$overview.stop().fadeTo('slow', 0.95).fadeTo('fast', 1.0);
       // HACK
       body_height = $('body').height()
     }, {
@@ -135,11 +161,11 @@ $(function () {
   $('.box .image').livequery(function () {
     $(this).waypoint(function (direction) {
       if (direction === 'down') {
-        $(this).stop(true, true).fadeOut(250).animate({ width: 250, height: 250, borderRadius: 125, left: -200 }, { queue : false }, 'slow');
-        $(this).find('.friend-count').stop(true, true).fadeOut(250).animate({ width: 250, height: 250, borderRadius: 125, left: -200 }, { queue : false }, 'slow');
+        $(this).stop().fadeOut(250).animate({ width: 250, height: 250, borderRadius: 125, left: -200 }, { queue : false }, 'slow');
+        $(this).find('.friend-count').stop().fadeOut(250).animate({ width: 250, height: 250, borderRadius: 125, left: -200 }, { queue : false }, 'slow');
       } else {
-        $(this).stop(true, true).fadeIn(250).animate({ width: 120, height: 120, borderRadius: 60, left: -136 }, { queue : false }, 'slow');
-        $(this).find('.friend-count').stop(true, true).fadeIn(250).animate({ width: 120, height: 120, borderRadius: 60, left: -136 }, { queue : false }, 'slow');
+        $(this).stop().fadeIn(250).animate({ width: 120, height: 120, borderRadius: 60, left: -136 }, { queue : false }, 'slow');
+        $(this).find('.friend-count').stop().fadeIn(250).animate({ width: 120, height: 120, borderRadius: 60, left: -136 }, { queue : false }, 'slow');
       }
     }, {
       offset: 300
