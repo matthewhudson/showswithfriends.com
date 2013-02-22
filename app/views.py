@@ -163,12 +163,14 @@ def sg_authorized():
     try:
         resp = json.loads(resp.content)
     except:
+        raise
         abort(500)
 
     try:
         resp = requests.get('https://api.seatgeek.com/2/oauth/token', params={'access_token': resp['access_token']})
         token = json.loads(resp.content)
     except:
+        raise
         abort(403)
 
     flash('Sick, you are now logged in', category="success")
