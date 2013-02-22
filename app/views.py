@@ -70,10 +70,10 @@ def set_user(resp):
 def before_request():
     access_token = session.get('access_token')
 
-    if 'code' in request.url:
-        print request.endpoint
-        print request.url
-        print access_token
+    if 'code' in request.url and access_token is None:
+        x = request.endpoint
+        y = request.url
+        z = access_token
         raise
 
     if access_token:
