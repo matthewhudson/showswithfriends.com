@@ -142,7 +142,7 @@ def index():
         "events" : events
     }
 
-    return json.dumps(return_response)
+    #return json.dumps(return_response)
 
     return render_template('home.html', res = return_response)
 

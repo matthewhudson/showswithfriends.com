@@ -77,15 +77,23 @@ def user_to_dict(user):
 
     return user_dict
 
+from collections import defaultdict
+
 def get_event_friend_mapping(session, user, event_ids):
-    event_friend_map = {}
-    event_id_string = ','.join(map(str,event_ids))
     user_id = user.id
-    query = """select event_id, ua.user_id friend_id, affinity friend_affinity  from friendships f, user_event_affinity ua  where f.friend_one = {0} and f.friend_two = ua.user_id and event_id in ({1}) order by affinity desc""".format(user_id, event_id_string)
+    friend_query = "select friend_two from friendships, users where friendships.friend_one = users.id and friend_one = {0}".format(user.id)
+    friend_ids = [x[0] for x in session.execute(friend_query)]
+    friend_id_string = ','.join(map(str, friend_ids))
+    event_friend_map = defaultdict(list)
+    event_id_string = ','.join(map(str,event_ids))
+    query = """select event_id, ua.user_id friend_id, affinity friend_affinity from user_event_affinity ua where ua.user_id in({0}) and event_id in({1})""".format(friend_id_string, event_id_string)
     qs = session.execute(query)
-    for key, q in groupby(qs, key=lambda e: e[0]):
-        event_friend_map[key] = [(x[1], x[2]) for x in q]
-        
+
+    tuples = [tuple(x) for x in qs]
+    for key, q in groupby(tuples, key=lambda e: e[0]):
+        new_list = event_friend_map[key] + map(lambda x: (x[1], x[2]), list(q))
+        new_list.sort(key=lambda e: -e[1])
+        event_friend_map[key] = new_list
     return event_friend_map
 
 def deduplicate(events):
@@ -120,11 +128,12 @@ def get_venue_events(session, user, venue_id):
 def score_event_for_user(event):
     n_friends = len(event["friends"])
     self_score = event["event"]["score"]
+    friend_score = 0
     if n_friends > 0:
         friend_score = sum(map(lambda x: x[1], event["friends"]))
     if self_score is None:
         return 0
-    return self_score
+    return friend_score
 
 def get_user_events(session, user):
     eq = session.query(UserEventAffinity).filter_by(user_id=user.id)
