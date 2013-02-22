@@ -15,11 +15,14 @@ $(function () {
     
     my.template = _.template($("script.modal-template").html());
 
-    my.el.click(function () {
-      that.hide();
+    my.el.click(function (e) {
+      if (_.indexOf(['container-inner', 'container-middle', 'container-outer', 'container'], e.target.className) >= 0) {
+        that.hide();
+      }
     });
 
     that.show = function () {
+
       $('body').css('overflow', 'hidden');
       my.el.show();
     };
@@ -30,7 +33,8 @@ $(function () {
     };
 
     that.addContent = function(data) {
-      $('.artist-bg').css('background', "url('" + data.image + "')");
+      console.log("inserting", '<img src="' + data.image + '" />' );
+      
       my.el.html(my.template({
         title : data.title,
         url : data.url,
@@ -39,8 +43,8 @@ $(function () {
         image : data.image,
         datetime : data.datetime
       }));
+$('.artist-bg').html('<img src="' + data.image + '" />');
     };
-
     return that;
   };
 
@@ -49,15 +53,16 @@ $(function () {
     $(this).find('.datetime').html(Date.parse($(this).find('.datetime').html()).toString("dddd, MMMM d, yyyy @ h:mm:ss tt"));
   });
 
+  var $overview = $('#overview')
   var $hero = $('#overview .container .info');
   $('.event').livequery(function () {
     $(this).waypoint(function (direction) {
       if (direction === 'down') {
         $intro.hide();
         $hero.show();
-        $(this).stop().animate({ opacity: 0 }, { queue : false }, 'fast');
+        $(this).stop(true, true).animate({ opacity: 0 }, { queue : false }, 'fast');
       } else {
-        $(this).stop().animate({ opacity: 1 }, { queue : false }, 'fast');
+        $(this).stop(true, true).animate({ opacity: 1 }, { queue : false }, 'fast');
 
         // Reset the hero unit if scrolling to top from bottom
         if ($(this).find('.id').html() === first_event) {
@@ -68,12 +73,13 @@ $(function () {
       $hero.html(hero_template({
         title : ellipsis($(this).find('.title b').text()),
         url : $(this).find('.url').html(),
-        venue_name : $(this).find('.venue-name').html(),
+        venue_name : $(this).find('.venue-name').text(),
         venue_city : $(this).find('.venue-city').html(),
         image : $(this).find('.image').attr('src'),
         datetime : $(this).find('.datetime').html()
       }));
-      $hero.find('.image').hide().fadeIn(250)
+      $hero.find('.image').hide().fadeIn(250);
+      $overview.stop(true, true).fadeTo('slow', 0.95).fadeTo('fast', 1.0);
       // HACK
       body_height = $('body').height()
     }, {
@@ -88,9 +94,9 @@ $(function () {
   $('.box .image').livequery(function () {
     $(this).waypoint(function (direction) {
       if (direction === 'down') {
-        $(this).stop().fadeOut(600).animate({ width: 250, height: 250, borderRadius: 125, left: -200 }, { queue : false }, 'slow');
+        $(this).stop(true, true).fadeOut(250).animate({ width: 250, height: 250, borderRadius: 125, left: -200 }, { queue : false }, 'slow');
       } else {
-        $(this).stop().fadeIn(600).animate({ width: 120, height: 120, borderRadius: 60, left: -136 }, { queue : false }, 'slow');
+        $(this).stop(true, true).fadeIn(250).animate({ width: 120, height: 120, borderRadius: 60, left: -136 }, { queue : false }, 'slow');
       }
     }, {
       offset: 300
@@ -110,8 +116,7 @@ $(function () {
     $(this).click(function (ev) {
 
       ev.preventDefault();
-      data = $(this).parent().parent();
-
+      data = $(this).parent().parent().parent();
       modal.addContent({
         title : data.find('.title').text(),
         url : data.find('.url').html(),
@@ -124,4 +129,6 @@ $(function () {
       return false;
     });
   });
+
+  $('#footer').css('marginTop', $(window).height() - 450);
 });

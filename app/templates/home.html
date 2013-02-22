@@ -4,7 +4,7 @@
   <div class="container">
     <div class="intro">
       <h1>Shows with Friends</h1>
-      <p class="lead">Find concerts your friends also want to see!</p>
+      <p class="lead">Find concerts for you and your friends!</p>
       <p class="lead sub">A <a href="http://seatgeek.com">SeatGeek</a> hackathon project by <a href="http://twitter.com/steve_rit">@steve_rit</a> and <a href="http://twitter.com/matthewgh">@matthewgh</a></p>
     </div>
     <div class="info"></div>
@@ -29,7 +29,7 @@
             </div>
             <span class="lead datetime">{{ event.datetime_utc }}</span>
             
-            <p class="lead venue-name">{{ event.venue.name }}, {{ event.venue.city }}</p>
+            <p class="lead venue-name">{{ event.venue.name|safe }}, {{ event.venue.city }}</p>
             <p class="lead url">{{ event.url }}</p>
             {% if event.performers[0].image %}
               <img class="image" src="{{ event.performers[0].image }}" />
