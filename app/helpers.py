@@ -5,17 +5,50 @@ import requests, json
 from app.models.tables import Friendship, User, UserEventAffinity, UserPerformerPreference
 from itertools import permutations, groupby
 
+from random import random
+
 def add_friendships(session, users):
     for user_one, user_two in permutations(users, 2):
-        f = Friendship(user_one=user_one, user_two=user_two, status=1)
-        session.merge(f)
+        f = session.query(Friendship).filter_by(user_one=user_one, user_two=user_two)
+        if f.count() == 0 and random() < .2:
+            f = Friendship(user_one=user_one, user_two=user_two, status=1)
+            f = Friendship(user_two=user_one, user_one=user_two, status=1)
+            session.merge(f)
     session.commit()
 
-def add_affinity(session, user, resp):
+
+def add_affinity(session, user):
     # load affinity
+
+    affinity = session.query(UserEventAffinity).filter_by(user_id = user.id)
+    if affinity.count() > 0:
+        return
+
+    preferences = session.query(UserPerformerPreference).filter_by(user_id = user.id)
+    if not preferences.count():
+        return
+
+    performer_ids = [up.performer_id for up in preferences]
+
+    params = {
+                'client_id' : app.flask_app.config['SG_CLIENT_KEY'],
+                'lat' : user.lat,
+                'lon' : user.lon,
+                'performers.id' : performer_ids,
+                'per_page' : 100,
+                'taxonomies.id' : 2000000
+    }
+
+    resp = json.loads(requests.get('https://api.seatgeek.com/2/recommendations', params=params).content)
+
     recs = resp.get('recommendations')
+    try:
+        max_aff = min(recs[0]['score'],.5)
+    except:
+        return
     event_affinities = map(lambda x: UserEventAffinity(user=user,event_id=x['event']['id'],
-                                                                    recommended=1, seen=0, shared_from=0, shared_to=0, affinity=x['score']),recs)
+                                                                    recommended=1, seen=0, shared_from=0, shared_to=0, affinity=x['score'] / max_aff),recs)
+
     for ev in event_affinities:
         session.merge(ev)
     session.commit()
@@ -67,11 +100,13 @@ def deduplicate(events):
     return events
 
 def get_user_friends(session, user):
-    friendships = session.query(Friendship, User).filter(Friendship.friend_two == User.id).filter(Friendship.status == 1)
-    friends = set()
-    for friendship, friend in friendships:
-        friends.add(friend)
-    friend_list = map(user_to_dict, list(friends))
+    friend_query = "select friend_two from friendships, users where friendships.friend_one = users.id and friend_one = {0}".format(user.id)
+    friend_ids = [x[0] for x in session.execute(friend_query)]
+    friends = session.query(User).filter(User.id.in_(friend_ids))
+    friend_set = set()
+    for friend in friends:
+        friend_set.add(friend)
+    friend_list = map(user_to_dict, list(friend_set))
     return friend_list
 
 def get_user_events(session, user):
