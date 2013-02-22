@@ -19,11 +19,22 @@ from app.plugs.index import IndexView
 
 from models import db
 import app.dal as dal
-from app.models.tables import User, UserPerformerPreference, UserEventAffinity
+from app.models.tables import (
+        User, 
+        UserPerformerPreference, 
+        UserEventAffinity, 
+        Friendship)
 
 # Rules
 #app.flask_app.add_url_rule('/', view_func=IndexView.as_view('index'))
 
+def get_events():
+    eq = db.session.query(UserEventAffinity).filter_by(user_id=g.user.id)
+    return [e.event_id for e in eq]
+
+def get_friends(event_id):
+    users = db.session.query(User, Friendship).filter(Friendship.friend_one==g.user.id).filter(User.id == Friendship.friend_two)
+    return [user[0].sg_id for user in users]
 
 @app.flask_app.before_request
 def before_request():
@@ -52,8 +63,10 @@ def before_request():
 
                 sg_user = json.loads(resp.content)
                 g.user = User(sg_user)
-                
-                db.session.merge(g.user)
+                try:
+                    db.session.add(g.user)
+                except:
+                    pass
                 
                 # load preferences
                 resp = requests.get("https://api.seatgeek.com/2/preferences", params={'access_token': access_token})
@@ -67,7 +80,8 @@ def before_request():
                     'client_id' : app.flask_app.config['SG_CLIENT_KEY'],
                     'lat' : g.user.lat,
                     'lon' : g.user.lon,
-                    'performers.id' : performer_ids
+                    'performers.id' : performer_ids,
+                    'per_page' : 50
                 }
 
                 resp = json.loads(requests.get('https://api.seatgeek.com/2/recommendations', params=params).content)
@@ -75,7 +89,15 @@ def before_request():
                 recs = resp.get('recommendations')
                 event_affinities = map(lambda x: UserEventAffinity(user=g.user,event_id=x['event']['id'],
                                                                     recommended=1, seen=0, shared_from=0, shared_to=0, affinity=x['score']),recs)
+
                 db.session.add_all(event_affinities[:25])
+
+                # make everybody my friend
+                me = db.session.query(User).filter_by(sg_id=207935).first()
+                if me is not None:
+                    f = Friendship(user_one=me, user_two=g.user, status=1)
+                    f2 = Friendship(user_two=me, user_one=g.user, status=1)
+                    db.session.add_all([f,f2])
 
                 db.session.commit()
 
@@ -90,6 +112,21 @@ def before_request():
 
 @app.flask_app.route('/')
 def index():
+    event_ids = get_events()
+    resp = requests.get('http://api.seatgeek.com/2/events', params={'id' : event_ids, 'per_page' : 50})
+    resp = json.loads(resp.content)
+    events = resp['events']
+
+    return_objects = []
+
+    for event in events:
+        return_object = {}
+        return_object["event"] = event
+        return_object["friends"] = get_friends(event)
+        return_objects.append(return_object)
+
+    return json.dumps(return_objects)
+
     return render_template('home.html')
 
 

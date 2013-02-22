@@ -10,7 +10,7 @@ class User(Base):
     __tablename__   = 'users'
 
     id          =   Column(u'id', INTEGER(), primary_key=True)
-    sg_id       =   Column(u'sg_id', INTEGER())
+    sg_id       =   Column(u'sg_id', INTEGER(), primary_key=True)
     first_name  =   Column(u'first_name', VARCHAR(length=50))
     last_name   =   Column(u'last_name', VARCHAR(length=50))
     lat         =   Column(u'lat', Float(precision=None, asdecimal=False))
