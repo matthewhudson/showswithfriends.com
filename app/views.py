@@ -70,6 +70,11 @@ def set_user(resp):
 def before_request():
     access_token = session.get('access_token')
 
+    if 'code' in request.url:
+        print session["access_token"]
+        print access_token
+        raise
+
     if access_token:
         resp = get_with_authentication('https://api.seatgeek.com/2/oauth/token')
 
