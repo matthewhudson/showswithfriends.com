@@ -86,9 +86,6 @@ def set_user(resp):
 def before_request():
     access_token = session.get('access_token')
 
-    if app.flask_app.debug:
-        g.user = db.session.query(User).filter_by(sg_id=36197).first()
-
     if access_token:
         resp = get_with_authentication('https://api.seatgeek.com/2/oauth/token')
 
@@ -109,6 +106,8 @@ def before_request():
             performer_preferences = map(lambda x: UserPerformerPreference(user=g.user, performer_id=x), performer_ids)
             for pp in performer_preferences:
                 db.session.merge(pp)
+
+            db.session.commit()
 
             # load affinity
             params = {
@@ -142,7 +141,6 @@ def add_friend():
     user = db.session.query(User).filter(User.id == user_id).first()
     add_friendships(db.session, [g.user, user])
     flash('friend added')
-    print 'friend added'
     return redirect(url_for('index'))
 
 
@@ -155,12 +153,10 @@ def index():
     return_response = {
         "tracker" : get_user_tracker(db.session, g.user),
         "friends" : get_user_friends(db.session, g.user),
-        "events" : events[0]
+        "events" : events
     }
 
-    return json.dumps(return_response)
-
-    #return render_template('home.html', res = return_response)
+    return render_template('home.html', res = return_response)
 
 
 @app.flask_app.route('/oauth')

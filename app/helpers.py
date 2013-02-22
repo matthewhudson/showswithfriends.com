@@ -57,7 +57,7 @@ def make_graph(event, preference_map):
         "name" : event['event']['short_title'],
         "class" : "event",
         "id" : event['event']['id'],
-        "contents" : make_children(event, preference_map)
+        "contents" : []#make_children(event, preference_map)
     }
     return root
 
@@ -84,29 +84,30 @@ def add_friendships(session, users, rand=2):
             session.merge(f)
     session.commit()
 
-def add_affinity(session, user):
+def add_affinity(session, user, resp=None):
     # load affinity
+    if resp is None:
 
-    affinity = session.query(UserEventAffinity).filter_by(user_id = user.id)
-    if affinity.count() > 0:
-        return
+        affinity = session.query(UserEventAffinity).filter_by(user_id = user.id)
+        if affinity.count() > 0:
+            return
 
-    preferences = session.query(UserPerformerPreference).filter_by(user_id = user.id)
-    if not preferences.count():
-        return
+        preferences = session.query(UserPerformerPreference).filter_by(user_id = user.id)
+        if not preferences.count():
+            return
 
-    performer_ids = [up.performer_id for up in preferences]
+        performer_ids = [up.performer_id for up in preferences]
 
-    params = {
-                'client_id' : app.flask_app.config['SG_CLIENT_KEY'],
-                'lat' : user.lat,
-                'lon' : user.lon,
-                'performers.id' : performer_ids,
-                'per_page' : 100,
-                'taxonomies.id' : 2000000
-    }
+        params = {
+                    'client_id' : app.flask_app.config['SG_CLIENT_KEY'],
+                    'lat' : user.lat,
+                    'lon' : user.lon,
+                    'performers.id' : performer_ids,
+                    'per_page' : 100,
+                    'taxonomies.id' : 2000000
+        }
 
-    resp = json.loads(requests.get('https://api.seatgeek.com/2/recommendations', params=params).content)
+        resp = json.loads(requests.get('https://api.seatgeek.com/2/recommendations', params=params).content)
 
     recs = resp.get('recommendations')
     try:
@@ -150,6 +151,7 @@ def get_event_friend_mapping(session, user, event_ids):
     user_id = user.id
     friend_query = "select friend_two from friendships, users where friendships.friend_one = users.id and friend_one = {0}".format(user.id)
     friend_ids = [x[0] for x in session.execute(friend_query)]
+    friend_ids += [user_id]
     friend_id_string = ','.join(map(str, friend_ids))
     event_friend_map = defaultdict(list)
     event_id_string = ','.join(map(str,event_ids))
