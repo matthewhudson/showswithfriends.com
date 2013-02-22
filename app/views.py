@@ -129,9 +129,9 @@ def index():
         "events" : get_user_events(db.session, g.user)
     }
 
-    return json.dumps(return_response)
+    #return json.dumps(return_response)
 
-    return render_template('home.html')
+    return render_template('home.html')#, return_response)
 
 
 @app.flask_app.route('/oauth')
