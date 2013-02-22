@@ -20,6 +20,12 @@ def add_affinity(session, user, resp):
         session.merge(ev)
     session.commit()
 
+def add_preference(session, user, resp):
+    performer_ids = [pref['performer']['id'] for pref in resp['preferences'] if pref['explicit']['preference'] is not None]
+    performer_preferences = map(lambda x: UserPerformerPreference(user=user, performer_id=x), performer_ids)
+    for pp in performer_preferences:
+        session.merge(pp)
+
 #### user methods
 
 def user_to_dict(user):
@@ -42,16 +48,23 @@ def get_event_friend_mapping(session, user, event_ids):
     event_friend_map = {}
     event_id_string = ','.join(map(str,event_ids))
     user_id = user.id
-    query = """select event_id, ua.user_id friend_id, affinity friend_affinity 
-    from friendships f, user_event_affinity ua  
-    where f.friend_one = {0} and f.friend_two = ua.user_id and event_id in ({1}) 
-    order by affinity desc""".format(user_id, event_id_string)
+    query = """select event_id, ua.user_id friend_id, affinity friend_affinity  from friendships f, user_event_affinity ua  where f.friend_one = {0} and f.friend_two = ua.user_id and event_id in ({1}) order by affinity desc""".format(user_id, event_id_string)
     qs = session.execute(query)
     for key, q in groupby(qs, key=lambda e: e[0]):
         event_friend_map[key] = [(x[1], x[2]) for x in q]
         
     return event_friend_map
 
+def deduplicate(events):
+    perfs = set()
+    ids = list()
+    for event in events:
+        perf = event['performers'][0]['id']
+        if perf not in perfs:
+            perfs.add(perf)
+            ids.append(event['id'])
+    events = filter(lambda x: x['id'] in ids, events)
+    return events
 
 def get_user_friends(session, user):
     friendships = session.query(Friendship, User).filter(Friendship.friend_two == User.id).filter(Friendship.status == 1)
@@ -68,6 +81,7 @@ def get_user_events(session, user):
     resp = json.loads(resp.content)
     friend_map = get_event_friend_mapping(session, user, ids)
     events = resp['events']
+    events = deduplicate(events)
     events = map(lambda x: {"friends" : friend_map.get(x['id'],[]),"event" : x},events)
     return events
 
