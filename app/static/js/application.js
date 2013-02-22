@@ -1,11 +1,28 @@
 $(function () {
 
+  var friends = {
+    1 : {
+      "name": "Matt"
+    },
+    2 : {
+      "name": "John"
+    },
+    3 : {
+      "name": "Nihal"
+    },
+    4 : {
+      "name": "Jose"
+    },
+    5 : {
+      "name": "Steve"
+    }
+  };
+
   var body_height = 0, first_event;
 
   var $intro = $('#overview .container .intro');
 
   _.templateSettings.variable = "rc";
-
 
   var hero_template = _.template($("script.hero-template").html());
 
@@ -62,7 +79,8 @@ $(function () {
         venue_name : data.venue_name,
         venue_city : data.venue_city,
         image : data.image,
-        datetime : data.datetime
+        datetime : data.datetime,
+        friend_count: data.friend_count
       }));
       $('.artist-bg').html('<img src="' + data.image + '" />');
     };
@@ -81,7 +99,7 @@ $(function () {
       if (direction === 'down') {
         $intro.hide();
         $hero.show();
-        $(this).stop(true, true).animate({ opacity: 0 }, { queue : false }, 'fast');
+        $(this).stop(true, true).animate({ opacity: 0 }, { queue : false }, 50);
       } else {
         $(this).stop(true, true).animate({ opacity: 1 }, { queue : false }, 'fast');
 
@@ -98,7 +116,8 @@ $(function () {
         venue_city : $(this).find('.venue-city').html(),
         image : $(this).find('.image').attr('src'),
         datetime : $(this).find('.datetime').html(),
-        performers_id : $(this).find('.performers-id').html()
+        performers_id : $(this).find('.performers-id').html(),
+        friend_count : $(this).find('.friend-count').html()
       }));
       $hero.find('.image').hide().fadeIn(250);
       $overview.stop(true, true).fadeTo('slow', 0.95).fadeTo('fast', 1.0);
@@ -117,8 +136,10 @@ $(function () {
     $(this).waypoint(function (direction) {
       if (direction === 'down') {
         $(this).stop(true, true).fadeOut(250).animate({ width: 250, height: 250, borderRadius: 125, left: -200 }, { queue : false }, 'slow');
+        $(this).find('.friend-count').stop(true, true).fadeOut(250).animate({ width: 250, height: 250, borderRadius: 125, left: -200 }, { queue : false }, 'slow');
       } else {
         $(this).stop(true, true).fadeIn(250).animate({ width: 120, height: 120, borderRadius: 60, left: -136 }, { queue : false }, 'slow');
+        $(this).find('.friend-count').stop(true, true).fadeIn(250).animate({ width: 120, height: 120, borderRadius: 60, left: -136 }, { queue : false }, 'slow');
       }
     }, {
       offset: 300
@@ -127,7 +148,7 @@ $(function () {
 
   function ellipsis (string) {
     if (string.length > 45) {
-      return string = string.substring(0, 44) + "...";
+      string = string.substring(0, 44) + "...";
     }
     return string
   }
