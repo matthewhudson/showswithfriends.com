@@ -171,7 +171,7 @@ def sg_authorized():
 
     flash('Sick, you are now logged in', category="success")
     session["access_token"] = token['access_token']
-    return redirect(url_for('index'))
+    return redirect('/')
 
 
 @app.flask_app.errorhandler(404)
