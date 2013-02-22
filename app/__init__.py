@@ -7,7 +7,12 @@ from flask.ext.oauth import OAuth
 
 from app.models import db
 
+from app.graph import make_graph, make_mapping
+
 flask_app = Flask(__name__)
+
+mapping = make_mapping()
+graph = make_graph(mapping)
 
 # Configuration
 if os.getenv('SG_ENV') == 'dev':

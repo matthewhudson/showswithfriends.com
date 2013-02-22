@@ -2,21 +2,26 @@
 import app
 
 from flask import url_for
-from sglib.common import tryInt, tryFloat
 
 def make_mapping():
     filepath = 'app/static/map.csv'
     mapping = {}
     with open(filepath, 'r') as f:
         for line in f:
-            compressed, sg, recon = line.split(',')
-            mapping[compressed] = tryInt(sg)
+            compressed, sg = line.split(',')
+            if sg is None:
+                sg = 0
+            try:
+                mapping[int(compressed)] = int(sg)
+            except:
+                pass
     return mapping
 
-def make_graph():
+def make_graph(mapping=None):
     filepath = 'app/static/graph.net'
     graph = []
-    mapping = make_mapping()
+    if mapping is None:
+        mapping = make_mapping()
     with open(filepath, 'r') as f:
         for line in f:
             if line[0] == '*':
@@ -25,6 +30,5 @@ def make_graph():
                 source, target, weight = line.split(' ')
             except:
                 break
-            graph.append((tryInt(source), tryInt(target), tryFloat(weight)))
+            graph.append((int(source), int(target), float(weight)))
     return graph
-
