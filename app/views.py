@@ -36,6 +36,18 @@ def get_friends(event_id):
     users = db.session.query(User, Friendship).filter(Friendship.friend_one==g.user.id).filter(User.id == Friendship.friend_two)
     return [user[0].sg_id for user in users]
 
+def get_with_authentication(url, *args, **kwargs):
+    params = kwargs.get('params', {})
+    params = {'access_token': session['access_token']}
+    return requests.get(url, params=params)
+
+def post_with_authentication(url, *args, **kwargs):
+    params = kwargs.get('params', {})
+    params['access_token'] = session['access_token']
+    params['consumer_key'] = app.flask_app.config['SG_CLIENT_KEY']
+    kwargs['params'] = params
+    return requests.post(url, **kwargs)
+
 @app.flask_app.before_request
 def before_request():
     if app.flask_app.config['DEBUG']:
@@ -44,7 +56,7 @@ def before_request():
     access_token = session.get('access_token')
 
     if access_token:
-        resp = requests.get('https://api.seatgeek.com/2/oauth/token', params={'access_token': access_token})
+        resp = get_with_authentication('https://api.seatgeek.com/2/oauth/token')
 
         try:
             resp = json.loads(resp.content)
@@ -107,6 +119,7 @@ def before_request():
 
     if request.endpoint in ('oauth', 'sg_authorized'):
         return
+    abort(403)
     return redirect(url_for('oauth'))
 
 
