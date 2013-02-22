@@ -185,4 +185,9 @@ $(function () {
   });
 
   $('#footer').css('marginTop', $(window).height() - 300);
+
+  $('#overlay .friends').livequery(function () {
+    console.log("BUILDING GRAPH")
+    buildTree("#overlay .friends");
+  });
 });

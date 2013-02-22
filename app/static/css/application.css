@@ -624,3 +624,19 @@ p.lead.sub {
   position: absolute;
   top: 0;
 }
+
+/* GRAPHS */
+
+circle.node-dot {
+  fill: #1665A8;
+  stroke: #186BAF;
+  stroke-width: 1px;
+}
+g text {
+  font-size: 12px;
+  font-weight: normal;
+  fill: #fff;
+}
+path.link {
+  fill: #ededed;
+}
