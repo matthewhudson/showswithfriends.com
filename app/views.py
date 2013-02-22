@@ -131,7 +131,7 @@ def index():
 
     #return json.dumps(return_response)
 
-    return render_template('home.html')#, return_response)
+    return render_template('home.html', res = return_response)
 
 
 @app.flask_app.route('/oauth')

@@ -21,7 +21,7 @@ class StagingConfig(Config):
     EXCEPTIONAL_API_KEY = ''
     SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/showtunes'
     SG_CLIENT_KEY = 'MjA3OTM1fDEzNjE0NTkzOTg'
-    SG_CLIENT_SEC = '5tu1x0pYx8R_ouab_ZAeVJTUP-lzTelMJMP3qePi'    
+    SG_CLIENT_SEC = '5tu1x0pYx8R_ouab_ZAeVJTUP-lzTelMJMP3qePi'
     # SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", 'postgres://mlfaerdqmihwqt:5uioakbw8XgNzAR1pNA6NE4RAS@ec2-107-21-122-236.compute-1.amazonaws.com:5432/dfmmm3r5jodsua')
     # SG_CLIENT_KEY = 'MjA3OTM1fDEzNjE0NTkyNTM'
     # SG_CLIENT_SEC = 'WWqj2_4lUDZ903aMXtd1IXFbu1RoivejRqI5B7wi'

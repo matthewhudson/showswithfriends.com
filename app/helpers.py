@@ -55,6 +55,16 @@ def get_event_friend_mapping(session, user, event_ids):
         
     return event_friend_map
 
+def deduplicate(events):
+    perfs = set()
+    ids = list()
+    for event in events:
+        perf = event['performers'][0]['id']
+        if perf not in perfs:
+            perfs.add(perf)
+            ids.append(event['id'])
+    events = filter(lambda x: x['id'] in ids, events)
+    return events
 
 def get_user_friends(session, user):
     friendships = session.query(Friendship, User).filter(Friendship.friend_two == User.id).filter(Friendship.status == 1)
@@ -71,6 +81,7 @@ def get_user_events(session, user):
     resp = json.loads(resp.content)
     friend_map = get_event_friend_mapping(session, user, ids)
     events = resp['events']
+    events = deduplicate(events)
     events = map(lambda x: {"friends" : friend_map.get(x['id'],[]),"event" : x},events)
     return events
 
